@@ -29,6 +29,8 @@ Include the following code into your configuration file:
 
 ## Screenshots
 
-<p align="center">
-  <img width="600" alt="Modern icons for LSP" src="screenshots/modern-icons-lsp.png"/>
-</p>
+- lsp-ui-imenu:
+
+  <p align="center">
+    <img width="600" alt="Modern icons for LSP" src="screenshots/modern-icons-lsp.png"/>
+  </p>
