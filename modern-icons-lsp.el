@@ -1,12 +1,12 @@
 ;;; modern-icons-lsp.el --- Modern icons for lsp-mode -*- lexical-binding: t -*-
 
-;; Copyright (C) 2025 Ta Quang Trung
+;; Copyright (C) 2025 Quang Trung Ta
 
-;; Author: Ta Quang Trung <taquangtrungvn@gmail.com>
+;; Author: Quang Trung Ta <taquangtrungvn@gmail.com>
 ;; Version: 0.1.0
 ;; Created: June 14, 2025
-;; Homepage: https://github.com/taquangtrung/modern-icons.el
-;; Package-Requires: ((emacs "28.1"))
+;; Homepage: https://github.com/emacs-modern-icons/modern-icons-lsp.el
+;; Package-Requires: ((emacs "28.1") (modern-icons "0.1") (lsp-mode "6.0"))
 ;; Keywords: lisp, icons, lsp
 
 ;; This program is free software; you can redistribute it and/or modify
