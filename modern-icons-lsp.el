@@ -82,12 +82,29 @@ FUNC is the `lsp-icons-get-by-symbol-kind' function."
               (icon (modern-icons-icon-for-code item-kind)))
     (propertize " " 'display icon)))
 
+
+(defun modern-icon-lsp-code-action-advisor (_func &rest _args)
+  "Advice function for LSP to display code action icons.
+FUNC is the `lsp--create-unique-string-fn' function."
+  (let (elements)
+    (lambda (element)
+      (let* ((count (cl-count element elements :test #'string=))
+             (icon (modern-icons-create-icon "symbol-icons" "lightbulb-small.svg"))
+             (icon-str (propertize " " 'display icon)))
+        (prog1 (concat
+                icon-str
+                (propertize " " 'display '(space :width 0.5))
+                element
+                (if (zerop count) "" (format " (%s)" icon-str element count)))
+          (push element elements))))))
+
 ;;;###autoload
 (defun modern-icons-lsp-enable ()
   "Enable `modern-icons-lsp'."
   (interactive)
   (advice-add 'lsp-icons-get-by-file-ext :around #'modern-icons-lsp-file-icon-advisor)
   (advice-add 'lsp-icons-get-by-symbol-kind :around #'modern-icons-lsp-symbol-icon-advisor)
+  (advice-add 'lsp--create-unique-string-fn :around #'modern-icon-lsp-code-action-advisor)
   (when (called-interactively-p 'any)
     (message "Modern-icons-lsp is enabled!")))
 
@@ -97,6 +114,7 @@ FUNC is the `lsp-icons-get-by-symbol-kind' function."
   (interactive)
   (advice-remove 'lsp-icons-get-by-file-ext #'modern-icons-lsp-file-icon-advisor)
   (advice-remove 'lsp-icons-get-by-symbol-kind #'modern-icons-lsp-symbol-icon-advisor)
+  (advice-remove 'lsp--create-unique-string-fn #'modern-icon-lsp-code-action-advisor)
   (when (called-interactively-p 'any)
     (message "Modern-icons-lsp is disabled!")))
 
