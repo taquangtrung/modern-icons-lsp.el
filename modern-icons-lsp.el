@@ -79,24 +79,29 @@ FUNC is the `lsp-icons-get-by-symbol-kind' function."
   (when-let* ((_ kind)
               (_ (lsp-icons--enabled-for-feature feature))
               (item-kind (modern-icons-lsp-kind-name kind))
-              (icon (modern-icons-icon-for-code item-kind)))
+              (icon (modern-icons-icon-for-code-item item-kind)))
     (propertize " " 'display icon)))
 
-
-(defun modern-icon-lsp-code-action-advisor (_func &rest _args)
+(defun modern-icon-lsp-code-action-advisor (_func actions &rest args)
   "Advice function for LSP to display code action icons.
-FUNC is the `lsp--create-unique-string-fn' function."
-  (let (elements)
-    (lambda (element)
-      (let* ((count (cl-count element elements :test #'string=))
-             (icon (modern-icons-create-icon "symbol-icons" "lightbulb-small.svg"))
-             (icon-str (propertize " " 'display icon)))
-        (prog1 (concat
-                icon-str
-                (propertize " " 'display '(space :width 0.5))
-                element
-                (if (zerop count) "" (format " (%s)" icon-str element count)))
-          (push element elements))))))
+FUNC is the `lsp--select-action' function."
+  (cond
+   ((seq-empty-p actions) (signal 'lsp-no-code-actions nil))
+   ((and (eq (seq-length actions) 1) lsp-auto-execute-action)
+    (lsp-seq-first actions))
+   (t (let ((completion-ignore-case t))
+        (lsp--completing-read "Select code action: "
+                              (seq-into actions 'list)
+                              (lambda (action)
+                                (let* ((kind (or (gethash "kind" action) ""))
+                                       (kind (if (string= (string-trim kind) "") "other"
+                                               kind))
+                                       (icon (modern-icons-icon-for-code-action kind))
+                                       (icon-str (propertize " " 'display icon)))
+                                  (concat icon-str
+                                          (propertize " " 'display '(space :width 0.5))
+                                          (lsp:code-action-title action))))
+                              nil t)))))
 
 ;;;###autoload
 (defun modern-icons-lsp-enable ()
@@ -104,7 +109,7 @@ FUNC is the `lsp--create-unique-string-fn' function."
   (interactive)
   (advice-add 'lsp-icons-get-by-file-ext :around #'modern-icons-lsp-file-icon-advisor)
   (advice-add 'lsp-icons-get-by-symbol-kind :around #'modern-icons-lsp-symbol-icon-advisor)
-  (advice-add 'lsp--create-unique-string-fn :around #'modern-icon-lsp-code-action-advisor)
+  (advice-add 'lsp--select-action :around #'modern-icon-lsp-code-action-advisor)
   (when (called-interactively-p 'any)
     (message "Modern-icons-lsp is enabled!")))
 
@@ -114,7 +119,7 @@ FUNC is the `lsp--create-unique-string-fn' function."
   (interactive)
   (advice-remove 'lsp-icons-get-by-file-ext #'modern-icons-lsp-file-icon-advisor)
   (advice-remove 'lsp-icons-get-by-symbol-kind #'modern-icons-lsp-symbol-icon-advisor)
-  (advice-remove 'lsp--create-unique-string-fn #'modern-icon-lsp-code-action-advisor)
+  (advice-remove 'lsp--select-action #'modern-icon-lsp-code-action-advisor)
   (when (called-interactively-p 'any)
     (message "Modern-icons-lsp is disabled!")))
 
