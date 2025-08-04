@@ -32,6 +32,7 @@
 ;;; Code:
 
 (require 'lsp-icons)
+(require 'lsp-ui)
 (require 'modern-icons)
 
 (defun modern-icons-lsp-kind-name (kind-index)
@@ -103,6 +104,16 @@ FUNC is the `lsp--select-action' function."
                                           (lsp:code-action-title action))))
                               nil t)))))
 
+(defun modern-icon-lsp-ui-sideline-code-action-advisor (_func action &rest args)
+  "Advice function for LSP UI sideline to display code action icons.
+FUNC is the `lsp-ui-sideline--code-actions-image' function."
+  (let* ((kind (or (gethash "kind" action) ""))
+         (kind (if (string= (string-trim kind) "") "other" kind))
+         (icon (modern-icons-icon-for-code-action kind))
+         (icon-str (propertize " " 'display icon)))
+    (concat icon-str
+            (propertize " " 'display '(space :width 0.5)))))
+
 ;;;###autoload
 (defun modern-icons-lsp-enable ()
   "Enable `modern-icons-lsp'."
@@ -110,6 +121,8 @@ FUNC is the `lsp--select-action' function."
   (advice-add 'lsp-icons-get-by-file-ext :around #'modern-icons-lsp-file-icon-advisor)
   (advice-add 'lsp-icons-get-by-symbol-kind :around #'modern-icons-lsp-symbol-icon-advisor)
   (advice-add 'lsp--select-action :around #'modern-icon-lsp-code-action-advisor)
+  (advice-add 'lsp-ui-sideline--code-actions-image
+              :around #'modern-icon-lsp-ui-sideline-code-action-advisor)
   (when (called-interactively-p 'any)
     (message "Modern-icons-lsp is enabled!")))
 
@@ -120,6 +133,8 @@ FUNC is the `lsp--select-action' function."
   (advice-remove 'lsp-icons-get-by-file-ext #'modern-icons-lsp-file-icon-advisor)
   (advice-remove 'lsp-icons-get-by-symbol-kind #'modern-icons-lsp-symbol-icon-advisor)
   (advice-remove 'lsp--select-action #'modern-icon-lsp-code-action-advisor)
+  (advice-remove 'lsp-ui-sideline--code-actions-image
+                 #'modern-icon-lsp-ui-sideline-code-action-advisor)
   (when (called-interactively-p 'any)
     (message "Modern-icons-lsp is disabled!")))
 
